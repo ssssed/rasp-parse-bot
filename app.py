@@ -7,7 +7,7 @@ class ParseRasp(object):
     link = "https://rasp.sstu.ru/rasp/group/22"
     FILE_NAME = "text.xlsx"
     headers = {}
-    rasp = []
+    week = ''
     today = ''
     timeLesson = ['8:00-9:30', '9:45-11:15',
                   '11:30-13:00', '13:40-15:10', '15:20-16:50']
@@ -19,7 +19,10 @@ class ParseRasp(object):
         days = s.find_all(lambda tag: tag.name == 'div' and
                           tag.get('class') == ['day'] or tag.get('class') == ['day', 'day-current'])
         for day in days:
-            day_name = day.find("div", class_="day-header").text[-5:]
+            day_header = day.find("div", class_="day-header")
+            day_name = day_header.text[-5:]
+            if (self.getToday() == day_name):
+                self.week = day_header.text[:-5]
             result_list[day_name] = []
             day__lesson = day.find_all("div", class_="lesson-name")
             for i in range(5):
@@ -29,7 +32,7 @@ class ParseRasp(object):
                     result_list[day_name].append("-")
         return result_list
 
-    def nextDay():
+    def nextDay(self):
         secondDay = datetime.date.today() + datetime.timedelta(days=1)
         return secondDay
 
@@ -39,15 +42,24 @@ class ParseRasp(object):
         today = today[1] + '.' + today[0]
         return today
 
+    def getLessons(self, data):
+        lessons = []
+        i = 0
+        for lesson in data:
+            lessons.append({'time': self.timeLesson[i], 'lesson': lesson})
+            i += 1
+        return lessons
+
     def generateJSON(self):
         today = self.getToday()
-        lessons = self.parse(self.link)
-        i = 0
-        for lesson in lessons[today]:
-            self.rasp.append(
-                {'id': i + 1, "time": self.timeLesson[i], "lesson": lesson})
-            i += 1
-        return self.rasp
+        pars = self.parse(self.link)
+        lessons = self.getLessons(pars[today])
+
+        return {
+            'day': today,
+            'week': self.week,
+            'lessons': lessons
+        }
 
 
 parsLesson = ParseRasp()
