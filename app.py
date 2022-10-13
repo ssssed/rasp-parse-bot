@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import datetime
 
 
-class ParseRasp(object):
+class ParseRasp():
     link = "https://rasp.sstu.ru/rasp/group/22"
     FILE_NAME = "text.xlsx"
     headers = {}
@@ -18,6 +18,8 @@ class ParseRasp(object):
         s = BeautifulSoup(r.text, "html.parser")
         days = s.find_all(lambda tag: tag.name == 'div' and
                           tag.get('class') == ['day'] or tag.get('class') == ['day', 'day-current'])
+        max_count_lessons = int(s.find_all(
+            'div', class_='day-lesson day-lesson-hour')[-1].find('span').text)
         for day in days:
             day_header = day.find("div", class_="day-header")
             day_name = day_header.text[-5:]
@@ -25,7 +27,7 @@ class ParseRasp(object):
                 self.week = day_header.text[:-5]
             result_list[day_name] = []
             day__lesson = day.find_all("div", class_="lesson-name")
-            for i in range(5):
+            for i in range(max_count_lessons):
                 if (i < len(day__lesson)):
                     result_list[day_name].append(day__lesson[i].text)
                 else:
@@ -60,7 +62,3 @@ class ParseRasp(object):
             'week': self.week,
             'lessons': lessons
         }
-
-
-parsLesson = ParseRasp()
-print(parsLesson.generateJSON())
