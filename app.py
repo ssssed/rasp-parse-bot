@@ -14,25 +14,37 @@ class ParseRasp():
 
     def parse(self, link):
         r = requests.get(link, headers=self.headers)
-        result_list = {}
         s = BeautifulSoup(r.text, "html.parser")
         days = s.find_all(lambda tag: tag.name == 'div' and
                           tag.get('class') == ['day'] or tag.get('class') == ['day', 'day-current'])
-        max_count_lessons = int(s.find_all(
-            'div', class_='day-lesson day-lesson-hour')[-1].find('span').text)
+        week_rasp = {}
         for day in days:
-            day_header = day.find("div", class_="day-header")
-            day_name = day_header.text[-5:]
-            if (self.getToday() == day_name):
-                self.week = day_header.text[:-5]
-            result_list[day_name] = []
-            day__lesson = day.find_all("div", class_="lesson-name")
-            for i in range(max_count_lessons):
-                if (i < len(day__lesson)):
-                    result_list[day_name].append(day__lesson[i].text)
-                else:
-                    result_list[day_name].append("-")
-        return result_list
+            day_header = day.find(class_='day-header')
+            week = day.find('span').text
+            day_name = day_header.text.replace(week, '')
+            lessons = day.find_all(lambda tag: tag.get('class') == ['day-lesson'] and
+                                   tag.get('class') != ['day-lesson', 'day-lesson-empty'])
+            day_rasp = []
+            for lesson in lessons:
+                lesson_room = lesson.find(class_='lesson-room').text
+                lesson_name = lesson.find(class_='lesson-name').text
+                lesson_type = lesson.find(class_='lesson-type').text
+                lesson_teacher = lesson.find(
+                    class_='lesson-teacher').text or 'Не Указан'
+                day_rasp.append({
+                    'room': lesson_room,
+                    'name': lesson_name,
+                    'type': lesson_type,
+                    'teacher': lesson_teacher
+                })
+            if (not len(day_rasp)):
+                day_rasp = [{'message': 'Нет пар'}]
+            week_rasp[day_name] = {
+                'day': day_name,
+                'week': week,
+                'lessons': day_rasp
+            }
+        return week_rasp
 
     def nextDay(self):
         secondDay = datetime.date.today() + datetime.timedelta(days=1)
@@ -62,3 +74,6 @@ class ParseRasp():
             'week': self.week,
             'lessons': lessons
         }
+
+# app = ParseRasp()
+# print(app.parse("https://rasp.sstu.ru/rasp/group/22"))

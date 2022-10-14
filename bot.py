@@ -22,11 +22,11 @@ def sheduleFormat(shedule):
     name = style.hbold(f"{shedule.get('week')} | {shedule.get('day')}")
     message = name + '\n\n'
     for lesson in shedule.get('lessons'):
-        if lesson.get('lesson') == '-':
+        if lesson.get('message') == 'Нет Пар':
             message += '------------\n' + 'Отдых' + '\n\n'
         else:
-            message += style.hbold(lesson.get('lesson')) + \
-                '\n' + lesson.get('time') + '\n\n'
+            message += 'Кабинет: ' + style.hitalic(lesson.get('room'))+'\n' + style.hbold(lesson.get('name')) + \
+                '\n' + style.hitalic(lesson.get('teacher')) + '\n\n'
     return message
 
 
@@ -35,7 +35,8 @@ async def set_default_commands(dp):
     await dp.bot.set_my_commands([
         types.BotCommand("start", "Запустить бота"),
         types.BotCommand("info", "Информация о боте"),
-        types.BotCommand("rasp", "Получить расписание"),
+        types.BotCommand("rasp", "Получить расписание на сегодня"),
+        types.BotCommand("rasp-next", "Получить расписание на следуюищй день"),
         types.BotCommand("help", "Помощь"),
     ])
 
@@ -61,8 +62,8 @@ async def sendShedule(message: types.Message):
     group = str(message.text)
     link = str(shedule_base[group])
     app.link = link
-
-    answer = sheduleFormat(app.generateJSON())
+    today = app.getToday()
+    answer = sheduleFormat(app.parse(link)[today])
     await message.answer(answer)
 
 
