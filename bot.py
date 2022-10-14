@@ -7,7 +7,19 @@ from aiogram.dispatcher.filters import Text
 import aiogram.utils.markdown as style
 import json
 from app import ParseRasp
-TOKEN = '5762024494:AAFgt8CdK9a96VNxqfwTQESDcC34kux3BNA'
+import os
+from dotenv import load_dotenv
+
+
+def dotenv_insert():
+    dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+    if os.path.exists(dotenv_path):
+        load_dotenv(dotenv_path)
+
+
+dotenv_insert()
+
+TOKEN = os.environ.get('TOKEN') or ''
 
 bot = Bot(token=TOKEN, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot)
