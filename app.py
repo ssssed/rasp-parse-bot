@@ -10,7 +10,7 @@ class ParseRasp():
     week = ''
     today = ''
     timeLesson = ['8:00-9:30', '9:45-11:15',
-                  '11:30-13:00', '13:40-15:10', '15:20-16:50']
+                  '11:30-13:00', '13:40-15:10', '15:20-16:50', '17:00 - 18:30', '18:40 - 20:10', '20:20 - 21:50']
 
     def parse(self, link):
         r = requests.get(link, headers=self.headers)
@@ -22,10 +22,19 @@ class ParseRasp():
             day_header = day.find(class_='day-header')
             week = day.find('span').text
             day_name = day_header.text.replace(week, '')
-            lessons = day.find_all(lambda tag: tag.get('class') == ['day-lesson'] and
-                                   tag.get('class') != ['day-lesson', 'day-lesson-empty'])
+            lessons = day.find_all(class_='day-lesson')
             day_rasp = []
+            i = 0
             for lesson in lessons:
+                if (lesson.get('class') == ['day-lesson', 'day-lesson-empty']):
+                    day_rasp.append({
+                        'room': '',
+                        'name': '-',
+                        'type': '',
+                        'teacher': ''
+                    })
+                    i+=1
+                    continue
                 lesson_room = lesson.find(class_='lesson-room').text
                 lesson_name = lesson.find(class_='lesson-name').text
                 lesson_type = lesson.find(class_='lesson-type').text
@@ -35,8 +44,10 @@ class ParseRasp():
                     'room': lesson_room,
                     'name': lesson_name,
                     'type': lesson_type,
+                    'time': self.timeLesson[i],
                     'teacher': lesson_teacher
                 })
+                i+=1
             if (not len(day_rasp)):
                 day_rasp = [{'message': 'Нет пар'}]
             week_rasp[day_name] = {

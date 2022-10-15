@@ -1,8 +1,4 @@
-from asyncore import dispatcher
-from email import message
-from tokenize import group
 from aiogram import Bot, Dispatcher, executor, types
-import aiogram
 from aiogram.dispatcher.filters import Text
 import aiogram.utils.markdown as style
 import json
@@ -37,8 +33,10 @@ def sheduleFormat(shedule):
         if lesson.get('message') == 'Нет Пар':
             message += '------------\n' + 'Отдых' + '\n\n'
         else:
-            message += 'Кабинет: ' + style.hitalic(lesson.get('room'))+'\n' + style.hbold(lesson.get('name')) + \
-                '\n' + style.hitalic(lesson.get('teacher')) + '\n\n'
+            if lesson.get('name') != '-':
+                message += style.hbold(lesson.get('name')) + ' ' + lesson.get('type') + '\n' + \
+                           'Кабинет: ' + style.hitalic(lesson.get('room'))+'\n' + 'Время: ' + lesson.get('time') + \
+                    '\nПреподаватель: ' + style.hitalic(lesson.get('teacher')) + '\n\n'
     return message
 
 
