@@ -1,4 +1,4 @@
 .env
 .fleet
 .idea
-config.py
+utils/config.py
